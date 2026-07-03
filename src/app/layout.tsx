@@ -3,6 +3,8 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AIBackground } from "@/components/ui/AIBackground";
+import { PageTransition } from "@/components/layout/PageTransition";
+import { ScrollProgress } from "@/components/ui/ScrollProgress";
 
 export const metadata: Metadata = {
   title: "Shlok's Project Hub",
@@ -18,9 +20,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased min-h-screen flex flex-col relative text-foreground bg-background">
         <AIBackground />
+        <ScrollProgress />
         <Navbar />
         <main className="flex-1 pt-24 pb-12 w-full max-w-7xl mx-auto px-6 z-10">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
       </body>
