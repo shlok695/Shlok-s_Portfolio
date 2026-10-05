@@ -1,6 +1,8 @@
+"use client";
+
 import { GlowCard } from "./GlowCard";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, CheckCircle, FolderGit2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, CheckCircle, FolderGit2, AlertTriangle } from "lucide-react";
 import { ProjectChallengesSection } from "./ProjectChallengesSection";
 
 export interface CaseStudyProps {
@@ -58,13 +60,13 @@ export function CaseStudy({
         </div>
         <div className="flex flex-wrap gap-4">
           {liveLink && (
-            <a href={liveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-full premium-glass hover:bg-white/10 text-white font-medium transition-colors border border-cyan-500/30">
+            <a href={liveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-full bg-card hover:bg-white/10 text-white font-medium transition-colors border border-cyan-500/30">
               <span>View Live Project</span>
               <ExternalLink className="w-4 h-4 text-cyan-400" />
             </a>
           )}
           {githubLink && (
-            <a href={githubLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-full premium-glass hover:bg-white/10 text-white font-medium transition-colors border border-white/10">
+            <a href={githubLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-full bg-card hover:bg-white/10 text-white font-medium transition-colors border border-border">
               <span>View on GitHub</span>
               <FolderGit2 className="w-4 h-4 text-gray-300" />
             </a>
@@ -74,12 +76,12 @@ export function CaseStudy({
 
       {/* Problem & Solution */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <GlowCard className="p-8 premium-glass border-indigo-500/20 border-t-indigo-500/40 border-t-2">
-          <h2 className="text-2xl font-bold mb-4 text-indigo-300">The Problem</h2>
+        <GlowCard className="p-8" icon={{ Icon: AlertTriangle, tone: "violet" }}>
+          <h2 className="text-2xl font-bold mb-4 text-white">The Problem</h2>
           <p className="text-gray-300 leading-relaxed">{problem}</p>
         </GlowCard>
-        <GlowCard className="p-8 premium-glass border-emerald-500/20 border-t-emerald-500/40 border-t-2">
-          <h2 className="text-2xl font-bold mb-4 text-emerald-300">The Solution</h2>
+        <GlowCard className="p-8" icon={{ Icon: CheckCircle, tone: "emerald" }}>
+          <h2 className="text-2xl font-bold mb-4 text-white">The Solution</h2>
           <p className="text-gray-300 leading-relaxed">{solution}</p>
         </GlowCard>
       </div>
@@ -89,7 +91,7 @@ export function CaseStudy({
         <h2 className="text-3xl font-bold mb-6 text-white">Key Features</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {features.map((feature, i) => (
-            <GlowCard key={i} delay={i * 0.1} className="p-4 premium-glass border-white/5">
+            <GlowCard key={i} delay={i * 0.1} className="p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
                 <span className="text-gray-300">{feature}</span>
@@ -104,25 +106,25 @@ export function CaseStudy({
         {architecture && (
           <section>
             <h2 className="text-2xl font-bold mb-4 text-white">Architecture</h2>
-            <p className="text-gray-300 leading-relaxed premium-glass p-6 rounded-xl border-white/5">{architecture}</p>
+            <p className="text-gray-300 leading-relaxed bg-card p-6 rounded-xl border border-border">{architecture}</p>
           </section>
         )}
         {security && (
           <section>
             <h2 className="text-2xl font-bold mb-4 text-white">Security Considerations</h2>
-            <p className="text-gray-300 leading-relaxed premium-glass p-6 rounded-xl border-white/5">{security}</p>
+            <p className="text-gray-300 leading-relaxed bg-card p-6 rounded-xl border border-border">{security}</p>
           </section>
         )}
         {deployment && (
           <section>
             <h2 className="text-2xl font-bold mb-4 text-white">Deployment Details</h2>
-            <p className="text-gray-300 leading-relaxed premium-glass p-6 rounded-xl border-white/5">{deployment}</p>
+            <p className="text-gray-300 leading-relaxed bg-card p-6 rounded-xl border border-border">{deployment}</p>
           </section>
         )}
         {future && (
           <section>
             <h2 className="text-2xl font-bold mb-4 text-white">Future Improvements</h2>
-            <p className="text-gray-300 leading-relaxed premium-glass p-6 rounded-xl border-white/5">{future}</p>
+            <p className="text-gray-300 leading-relaxed bg-card p-6 rounded-xl border border-border">{future}</p>
           </section>
         )}
       </div>
@@ -140,7 +142,7 @@ export function CaseStudy({
       <section className="flex flex-col items-center text-center py-10 border-t border-white/10">
         <span className="text-gray-300 mb-6">Want to know more about the developer?</span>
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link href="/" className="px-6 py-3 rounded-full premium-glass hover:bg-white/10 text-white font-medium transition-colors border-white/10">
+          <Link href="/" className="px-6 py-3 rounded-full bg-card hover:bg-white/10 text-white font-medium transition-colors border border-border">
             Back to Project Hub
           </Link>
           <Link href="/home" className="btn-gradient px-6 py-3 rounded-full font-semibold">

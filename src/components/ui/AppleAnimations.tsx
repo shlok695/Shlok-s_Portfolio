@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ReactNode } from "react";
+import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { ReactNode, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 // Apple's signature easing curve for an organic, super-smooth feel
@@ -42,17 +42,27 @@ export function AppleFade({ children, delay = 0, className = "" }: AnimationProp
 }
 
 export function ScrollParallaxHero({ children, className = "" }: { children: ReactNode; className?: string }) {
-  const { scrollY } = useScroll();
-  
-  // Transform values based on scroll position
-  // From 0 to 400px of scroll, scale from 1 to 0.9, and fade opacity from 1 to 0
-  const scale = useTransform(scrollY, [0, 400], [1, 0.9]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
-  const y = useTransform(scrollY, [0, 400], [0, 100]);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Track scroll progress across the hero's own height, not fixed pixel offsets.
+  // Fixed offsets (e.g. "fade out over 300px") complete almost instantly on mobile,
+  // where wrapped headings/tags/stacked buttons make the hero much taller than on
+  // desktop, leaving a long dead-scroll gap before the next section appears.
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.9]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  // Scroll-linked styles aren't covered by MotionConfig's reducedMotion, so opt out explicitly.
+  const reduce = useReducedMotion();
 
   return (
     <motion.div
-      style={{ scale, opacity, y }}
+      ref={ref}
+      style={reduce ? undefined : { scale, opacity, y }}
       className={cn("origin-center", className)}
     >
       {children}
@@ -187,22 +197,24 @@ export function HeroWordReveal({ text, delay = 0, className = "" }: { text: stri
   );
 }
 
-import { useState, useRef } from "react";
-
 export function MagneticButton({ children, className = "", onClick }: { children: ReactNode, className?: string, onClick?: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  // Motion values, not React state: the pointer moves every frame and must not re-render the tree.
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const x = useSpring(rawX, { stiffness: 150, damping: 15, mass: 0.1 });
+  const y = useSpring(rawY, { stiffness: 150, damping: 15, mass: 0.1 });
 
   const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { clientX, clientY } = e;
-    const { height, width, left, top } = ref.current!.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    setPosition({ x: middleX * 0.1, y: middleY * 0.1 });
+    if (!ref.current) return;
+    const { height, width, left, top } = ref.current.getBoundingClientRect();
+    rawX.set((e.clientX - (left + width / 2)) * 0.1);
+    rawY.set((e.clientY - (top + height / 2)) * 0.1);
   };
 
   const reset = () => {
-    setPosition({ x: 0, y: 0 });
+    rawX.set(0);
+    rawY.set(0);
   };
 
   return (
@@ -210,8 +222,7 @@ export function MagneticButton({ children, className = "", onClick }: { children
       ref={ref}
       onMouseMove={handleMouse}
       onMouseLeave={reset}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+      style={{ x, y }}
       className={cn("inline-block", className)}
       onClick={onClick}
     >

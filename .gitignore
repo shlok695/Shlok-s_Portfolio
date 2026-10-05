@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+
+# claude / AI tooling (local only)
+/.claude/
+CLAUDE.md
+/.impeccable/
+/.playwright-cli/
