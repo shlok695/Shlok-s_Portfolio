@@ -8,10 +8,10 @@ pipeline {
   agent { label 'server' }
 
   environment {
-    APP_DIR      = '/home/shlok/portfolio'           // CHANGE: live code folder on the server
+    APP_DIR      = '/home/shlok/portfolio/Portfolio'           // CHANGE: live code folder on the server
     BACKUP_DIR   = '/home/shlok/portfolio_backup'   // CHANGE: must NOT be inside APP_DIR
     SRC_DIR      = '.'                                  // CHANGE: repo folder to deploy, e.g. 'Frontend'
-    PORT         = '3000'                               // CHANGE: port the app listens on
+    PORT         = '3003'                               // must match docker-compose.yml
     KEEP         = '3'
     COMPOSE_FILE = "${APP_DIR}/docker-compose.yml"
   }
