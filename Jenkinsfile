@@ -1,17 +1,23 @@
-// Build and deploy on every push. Before each deploy, the live code is copied
+// Build and deploy on every push, directly in the application folder (no
+// separate Jenkins workspace). Before each checkout, the live code is copied
 // to a timestamped backup folder and only the newest 3 backups are kept.
 //
 // Works with a regular Pipeline job ("Pipeline script from SCM").
 
 pipeline {
-  // CHANGE: your Jenkins node name/label for the server.
-  agent { label 'server' }
+  agent {
+    node {
+      label 'server'
+      // Jenkins checks out and builds right here instead of in
+      // ~/agent/workspace/<job>. Keep this in sync with APP_DIR below.
+      customWorkspace '/home/shlok/portfolio'
+    }
+  }
 
   environment {
-    APP_DIR      = '/home/shlok/portfolio/'           // CHANGE: live code folder on the server
-    BACKUP_DIR   = '/home/shlok/portfolio_backup'   // CHANGE: must NOT be inside APP_DIR
-    SRC_DIR      = '.'                                  // CHANGE: repo folder to deploy, e.g. 'Frontend'
-    PORT         = '3003'                               // must match docker-compose.yml
+    APP_DIR      = '/home/shlok/portfolio'         // must match customWorkspace above
+    BACKUP_DIR   = '/home/shlok/portfolio_backup'  // must NOT be inside APP_DIR
+    PORT         = '3003'                          // must match docker-compose.yml
     KEEP         = '3'
     COMPOSE_FILE = "${APP_DIR}/docker-compose.yml"
   }
@@ -30,12 +36,8 @@ pipeline {
 
   stages {
 
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
+    // Runs before Checkout, because Checkout now writes straight into the
+    // live folder.
     stage('Backup') {
       steps {
         sh '''
@@ -76,20 +78,11 @@ pipeline {
       }
     }
 
-    stage('Copy Files') {
+    // Checks out the pushed commit into APP_DIR. Tracked files are updated;
+    // untracked files such as .env are left alone.
+    stage('Checkout') {
       steps {
-        sh '''
-          set -eu
-          mkdir -p "$APP_DIR"
-
-          rsync -av --delete \
-            --exclude='.git' \
-            --exclude='.env' \
-            --exclude='.env.local' \
-            --exclude='node_modules' \
-            --exclude='.next' \
-            "./$SRC_DIR/" "$APP_DIR/"
-        '''
+        checkout scm
       }
     }
 
@@ -174,7 +167,10 @@ pipeline {
           LAST=$(cat "$BACKUP_DIR/.last_backup")
           echo "Rolling back to $LAST"
 
+          # .git is excluded so --delete can't wipe the repo: backups don't
+          # contain it, and the app folder is now the Jenkins checkout.
           rsync -a --delete \
+            --exclude='.git' \
             --exclude='.env' \
             --exclude='.env.local' \
             --exclude='node_modules' \
