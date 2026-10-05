@@ -128,8 +128,8 @@ export function TerminalStatus() {
         "status: operational",
       ]
     : errored
-      ? ["status: reconnecting..."]
-      : ["status: checking..."];
+      ? ["status: reconnecting…"]
+      : ["status: checking…"];
 
   const logText = useTypewriter(lines);
 

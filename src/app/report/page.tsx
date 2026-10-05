@@ -39,10 +39,10 @@ export default function Reports() {
       <section className="max-w-4xl mx-auto w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {reports.map((report, i) => (
-            <GlowCard key={report.title} delay={i * 0.1} className="p-6 flex flex-col h-full premium-glass border-white/5 border-t-cyan-500/20 border-t-2">
+            <GlowCard key={report.title} delay={i * 0.1} className="p-6 flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <FileText className="w-8 h-8 text-cyan-400" />
-                <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${report.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
+                <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${report.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-gray-300 border border-white/10'}`}>
                   {report.status === 'Available' && <CheckCircle2 className="w-3 h-3" />}
                   {report.status}
                 </span>
@@ -51,9 +51,9 @@ export default function Reports() {
               <p className="text-gray-400 text-sm flex-1 mb-6">
                 {report.description}
               </p>
-              <a 
-                href={report.link} 
-                className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition-colors ${report.status === 'Available' ? 'premium-glass hover:bg-white/10 text-white' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}
+              <a
+                href={report.link}
+                className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition-colors ${report.status === 'Available' ? 'bg-card border border-border hover:bg-white/10 text-white' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}
               >
                 <span>View Document</span>
                 <ExternalLink className={`w-4 h-4 ${report.status === 'Available' ? 'text-cyan-400' : ''}`} />
@@ -65,7 +65,7 @@ export default function Reports() {
 
       <section className="flex flex-col items-center text-center py-10 mt-10 border-t border-white/10 max-w-4xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <Link href="/" className="px-6 py-3 rounded-full premium-glass hover:bg-white/10 text-white font-medium transition-colors border-white/10">
+          <Link href="/" className="px-6 py-3 rounded-full bg-card border border-border hover:bg-white/10 text-white font-medium transition-colors">
             Back to Project Hub
           </Link>
           <div className="hidden sm:block w-px h-10 bg-white/20"></div>

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Terminal, Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { appleEase } from '@/components/ui/AppleAnimations';
 
@@ -23,13 +23,14 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeHash, setActiveHash] = useState("");
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  // Motion's scroll value only triggers a render when the threshold is actually crossed.
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (y) => {
+    const next = y > 24;
+    setScrolled((prev) => (prev === next ? prev : next));
+  });
 
+  // Active section: an IntersectionObserver band just under the navbar, instead of measuring on every scroll frame.
   useEffect(() => {
     const ids = Array.from(new Set(links.map((l) => l.href.split('#')[1]).filter(Boolean))) as string[];
     const sections = ids
@@ -37,16 +38,16 @@ export function Navbar() {
       .filter((el): el is HTMLElement => el !== null)
       .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
 
-    const onScroll = () => {
-      let current = "";
-      for (const sec of sections) {
-        if (sec.getBoundingClientRect().top <= 140) current = sec.id;
-      }
-      setActiveHash(current);
+    // Measure only when a section crosses the band, not on every scroll frame.
+    const pick = () => {
+      const current = sections.filter((sec) => sec.getBoundingClientRect().top <= 140).pop();
+      setActiveHash(current ? current.id : "");
     };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    pick();
+
+    const observer = new IntersectionObserver(pick, { rootMargin: "-140px 0px -55% 0px", threshold: [0, 1] });
+    sections.forEach((sec) => observer.observe(sec));
+    return () => observer.disconnect();
   }, [pathname]);
 
   const isLinkActive = (href: string) => {
@@ -63,20 +64,20 @@ export function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 w-full z-50 border-b transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        "fixed top-0 w-full z-50 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
         scrolled
-          ? "bg-background/70 backdrop-blur-2xl border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.2)]"
+          ? "bg-background/80 backdrop-blur-2xl border-white/10 shadow-[0_4px_30px_rgba(3,2,10,0.35)]"
           : "bg-background/20 backdrop-blur-md border-transparent"
       )}
     >
       <div
         className={cn(
-          "max-w-7xl mx-auto px-6 flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between transition-[height] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
           scrolled ? "h-14" : "h-16"
         )}
       >
         <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-foreground font-semibold group">
-          <Terminal className="w-5 h-5 text-cyan-500 group-hover:text-cyan-400 group-hover:rotate-6 transition-all duration-300" />
+          <Terminal aria-hidden="true" className="w-5 h-5 text-cyan-400 group-hover:rotate-6 transition-transform duration-300" />
           <span className="tracking-wide">Shlok Shah</span>
         </Link>
 
@@ -88,6 +89,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative py-2 transition-colors duration-300 hover:text-white",
                   isActive ? "text-white" : "text-gray-400"
@@ -98,7 +100,7 @@ export function Navbar() {
                   <motion.span
                     layoutId="nav-active-underline"
                     transition={{ duration: 0.5, ease: appleEase }}
-                    className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(0,225,255,0.8)]"
+                    className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-400 rounded-full"
                   />
                 )}
               </Link>
@@ -111,9 +113,9 @@ export function Navbar() {
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
-          className="md:hidden p-2 -mr-2 text-gray-300 hover:text-white transition-colors"
+          className="md:hidden -mr-2.5 p-3 text-gray-300 hover:text-white transition-colors"
         >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {mobileOpen ? <X aria-hidden="true" className="w-5 h-5" /> : <Menu aria-hidden="true" className="w-5 h-5" />}
         </button>
       </div>
 

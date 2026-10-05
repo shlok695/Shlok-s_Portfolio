@@ -238,3 +238,89 @@ export const projects: ProjectData[] = [
 export function getProjectBySlug(slug: string): ProjectData | undefined {
   return projects.find((p) => p.slug === slug);
 }
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+function similarity(a: string, b: string): number {
+  if (!a || !b) return 0;
+  return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
+}
+
+const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/**
+ * Guesses which project a mistyped or stale URL was probably trying to reach,
+ * using the last path segment (so it works for both "/repoplit" and
+ * "/projects/repoplit"). Used by the root not-found page.
+ */
+export function findClosestProject(pathname: string, threshold = 0.5): ProjectData | null {
+  const segments = pathname.split("/").filter(Boolean);
+  const target = normalize(segments[segments.length - 1] ?? "");
+  if (!target) return null;
+
+  let best: ProjectData | null = null;
+  let bestScore = 0;
+
+  for (const project of projects) {
+    const candidates = [project.slug, normalize(project.title), ...project.tags.map(normalize)];
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+      let score = similarity(target, candidate);
+      if (candidate.includes(target) || target.includes(candidate)) {
+        score = Math.max(score, 0.75);
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = project;
+      }
+    }
+  }
+
+  return bestScore >= threshold ? best : null;
+}
+
+/**
+ * Identifies which live project a visitor most likely arrived from, using
+ * document.referrer. Since each project is deployed on its own port/origin
+ * behind the reverse proxy, the referring URL's host and path are a much
+ * stronger signal than guessing from the (often generic) landing path — it
+ * works whether the app shares this domain via path routing or has its own
+ * origin entirely. Requires the referring app to send a normal referrer
+ * (i.e. no `Referrer-Policy: no-referrer` on their end).
+ */
+export function findProjectByReferrer(referrer: string, currentHref?: string): ProjectData | null {
+  if (!referrer) return null;
+
+  let url: URL;
+  try {
+    url = new URL(referrer);
+  } catch {
+    return null;
+  }
+
+  if (currentHref && url.href === currentHref) return null;
+
+  const haystack = normalize(url.hostname + url.pathname);
+
+  for (const project of projects) {
+    const candidates = [project.slug, normalize(project.title)];
+    if (candidates.some((c) => c && haystack.includes(c))) {
+      return project;
+    }
+  }
+
+  return null;
+}

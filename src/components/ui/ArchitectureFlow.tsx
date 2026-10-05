@@ -26,7 +26,7 @@ export function ArchitectureFlow() {
             transition={{ delay: index * 0.2 }}
             className="z-10 flex flex-col items-center"
           >
-            <GlowCard className="p-6 flex flex-col items-center justify-center w-40 h-40 premium-glass border-white/5 border-t-cyan-500/30 border-t-2">
+            <GlowCard className="p-6 flex flex-col items-center justify-center w-40 h-40">
               <step.icon className="w-10 h-10 text-cyan-400 mb-3" />
               <span className="font-medium text-center text-sm text-gray-200">{step.label}</span>
               <span className="text-xs text-gray-400 mt-1 text-center">{step.sub}</span>
@@ -62,11 +62,11 @@ export function ArchitectureFlow() {
             <span className="text-gray-300">→ Reports</span>
           </div>
           <div className="flex justify-between border-b border-white/5 pb-2 hover:bg-white/5 px-2 rounded transition-colors">
-            <span className="text-emerald-400">/repopilot</span>
+            <span className="text-cyan-400">/repopilot</span>
             <span className="text-gray-300">→ RepoPilot App</span>
           </div>
           <div className="flex justify-between px-2 hover:bg-white/5 rounded transition-colors py-1">
-            <span className="text-indigo-400">/campuskart</span>
+            <span className="text-cyan-400">/campuskart</span>
             <span className="text-gray-300">→ CampusKart App</span>
           </div>
         </div>
