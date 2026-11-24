@@ -1,8 +1,6 @@
 services:
   portfolio:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/shlok695/portfolio:${TAG}
     container_name: portfolio
     ports:
       - "3003:3003"
